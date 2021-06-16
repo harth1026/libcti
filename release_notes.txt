@@ -1,0 +1,26 @@
+Hamamatsu Video Capture Library for LabVIEW
+Release Notes
+
+OVERVIEW:
+	LIBCTI is a library made to provide a simple interface to provide graphical display, audio output,
+	and keyboard/mouse.  
+
+TODO:
+	- (med) alpha blending / fading in out
+	- primitives
+	- error codes
+	- (done) transparent images
+	- (done) switch from SDL_Surface to SDL_Texture
+	- (done) full keyboard input
+	- (done) audio interface
+
+BUG LIST:
+	- (fixed) cti_pollevent() only handles single event.  Possibility of missing events.
+	- (fixed) cti_cleardisplay() does not do anything.
+
+
+RELEASES:
+
+0.0.1 - future
+	- Initial release
+
