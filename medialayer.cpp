@@ -42,6 +42,10 @@ bool medialayer::initialize(std::string windowname, int screenx, int screeny)
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
 		return false;
 
+	if (TTF_Init() == -1) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -194,18 +198,22 @@ SDL_Texture* medialayer::loadTexture(std::string path, bool transparentbackgroun
 
 	return outputTexture;
 }
-
+/*
 SDL_Texture* medialayer::loadTextTexture(std::string text, SDL_Color textColor)
 {
 	SDL_Texture* outputTexture = nullptr;
-	SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, text.c_str(), textColor);
-	if (textSurface)
+	if (m_font)
 	{
-		outputTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
-		SDL_FreeSurface(textSurface);
+		SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, text.c_str(), textColor);
+		if (textSurface)
+		{
+			outputTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+			SDL_FreeSurface(textSurface);
+		}
 	}
 	return outputTexture;
 }
+*/
 
 bool medialayer::drawline(int ax, int ay, int bx, int by, int r, int g, int b)
 {
@@ -264,20 +272,34 @@ bool medialayer::freeimage(CTI_IMAGE imageref)
 	return result;
 }
 
-bool medialayer::setimagetodisplay(CTI_IMAGE imageref, int pos_x, int pos_y)
+bool medialayer::setimagetodisplay(CTI_IMAGE imageref, int pos_x, int pos_y, CRECT* srcrect)
 {
 	bool result = false;
 	if (imageref)
 	{
-		SDL_Rect dstpos;
+		SDL_Rect* srcpos = nullptr;
+		int w = 0;
+		int h = 0;
+		SDL_QueryTexture((SDL_Texture*)imageref, NULL, NULL, &w, &h);
 
-		SDL_QueryTexture((SDL_Texture*)imageref, NULL, NULL, &dstpos.w, &dstpos.h);
-
+		SDL_Rect dstpos = SDL_Rect();
+		dstpos.w = w;
+		dstpos.h = h;
 		dstpos.x = pos_x;
 		dstpos.y = pos_y;
 
+		if (srcrect)
+		{
+			srcpos = new SDL_Rect();
+			srcpos->x = srcrect->x;
+			srcpos->y = srcrect->y;
+			srcpos->w = srcrect->w;
+			srcpos->h = srcrect->h;
+			dstpos.w = srcrect->w;
+			dstpos.h = srcrect->h;
+		}
 
-		SDL_RenderCopy(m_renderer, (SDL_Texture*)imageref, nullptr, &dstpos);
+		SDL_RenderCopy(m_renderer, (SDL_Texture*)imageref, srcpos, &dstpos);
 		result = true;
 	}
 
@@ -313,14 +335,31 @@ bool medialayer::getimagesize(CTI_IMAGE imageref, int* size_x, int* size_y)
 	return result;
 }
 
+bool medialayer::setalphamodulation(CTI_IMAGE imageref, int value)
+{
+	SDL_SetTextureAlphaMod((SDL_Texture*)imageref, value);
+	return true;
+}
 
+/*
 bool medialayer::setfont(std::string fontpath, int fontsize)
 {
 	bool result = false;
+
+	if (m_font)
+	{
+		TTF_CloseFont(m_font);
+		m_font = nullptr;
+	}
+
 	m_font = TTF_OpenFont(fontpath.c_str(), fontsize);
 	if (m_font)
 	{
 		result = true;
+	}
+	else
+	{
+		printf("TTF_OpenFont: %s\n", TTF_GetError());
 	}
 	return result;
 }
@@ -345,11 +384,75 @@ bool medialayer::settexttodisplay(std::string text, int pos_x, int pos_y, int r,
 		dstpos.y = pos_y;
 
 		SDL_RenderCopy(m_renderer, TexText, nullptr, &dstpos);
+		SDL_DestroyTexture(TexText);
 		result = true;
 	}
 
 	return result;
 }
+*/
+
+bool medialayer::addfont(std::string fontfile, int fontsize, CTI_FONT* fontref)
+{
+	bool result = false;
+
+	*fontref = (CTI_FONT)TTF_OpenFont(fontfile.c_str(), fontsize);
+	if (*fontref)
+	{
+		m_fontlist.push_back((TTF_Font*)*fontref);
+		result = true;
+	}
+
+	return result;
+}
+
+bool medialayer::freeallfonts()
+{
+	for (int i = 0; i < m_fontlist.size(); i++)
+	{
+		TTF_CloseFont(m_fontlist[i]);
+	}
+	m_fontlist.clear();
+	return true;
+}
+
+bool medialayer::freefont(CTI_FONT fontref)
+{
+	bool result = false;
+	for (int i = 0; i < m_fontlist.size(); i++)
+	{
+		if (m_fontlist[i] == (TTF_Font*)fontref)
+		{
+			TTF_CloseFont(m_fontlist[i]);
+			m_fontlist.erase(m_fontlist.begin() + i);
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+bool medialayer::texttoimage(CTI_IMAGE* imageref, CTI_FONT fontref, std::string text, CCOLOR col)
+{
+	bool result = false;
+	SDL_Color color;
+	color.r = col.r;
+	color.g = col.g;
+	color.b = col.b;
+	SDL_Surface* tempsurface = TTF_RenderText_Solid((TTF_Font*)fontref, text.c_str(), color);
+	if (tempsurface)
+	{
+		*imageref = (CTI_IMAGE)SDL_CreateTextureFromSurface(m_renderer, tempsurface);
+		SDL_FreeSurface(tempsurface);
+		if (*imageref)
+		{
+			m_imagelist.push_back((SDL_Texture*)*imageref);
+			result = true;
+		}
+	}
+	return result;
+}
+
 
 bool medialayer::cleardisplay()
 {
@@ -442,6 +545,12 @@ bool medialayer::resumemusic()
 	return true;
 }
 
+bool medialayer::setmusicvolume(int volume)
+{
+	Mix_VolumeMusic(volume);
+	return true;
+}
+
 bool medialayer::addsound(std::string wavfile, CTI_SOUND* soundref)
 {
 	bool result = false;
@@ -494,6 +603,11 @@ bool medialayer::playsound(CTI_SOUND soundref)
 	return result;
 }
 
+bool medialayer::setsoundvolume(int volume, int channel)
+{
+	Mix_Volume(channel, volume);
+	return true;
+}
 
 
 

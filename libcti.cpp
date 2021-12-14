@@ -416,7 +416,7 @@ bool cti_setimagetodisplay(CTI_IMAGE imageref, int pos_x, int pos_y)
 	return result;
 }
 */
-bool cti_setimagetodisplay(CTI_IMAGE imageref, CVEC2 pos)
+bool cti_setimagetodisplay(CTI_IMAGE imageref, CVEC2 pos, CRECT* rect)
 {
 	bool result = false;
 
@@ -428,7 +428,7 @@ bool cti_setimagetodisplay(CTI_IMAGE imageref, CVEC2 pos)
 
 	if (ml)
 	{
-		result = ml->setimagetodisplay(imageref, pos.cx, pos.cy);
+		result = ml->setimagetodisplay(imageref, pos.cx, pos.cy, rect);
 	}
 
 	if (g_debuglog.isactive())
@@ -518,57 +518,6 @@ _DLLFUNC bool cti_getimagesize(CTI_IMAGE imageref, CVEC2* size)
 	return result;
 }
 
-_DLLFUNC bool cti_setfont(std::string fontpath, int fontsize)
-{
-	bool result = false;
-
-	if (g_debuglog.isactive())
-	{
-		sprintf_s(g_logtext, 256, "%s() ->", __func__);
-		g_debuglog.writeentrytolog(g_logtext);
-	}
-
-	if (ml)
-	{
-		result = ml->setfont(fontpath, fontsize);
-	}
-
-	if (g_debuglog.isactive())
-	{
-		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
-		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
-		g_debuglog.writeentrytolog(g_logtext);
-	}
-	return result;
-}
-
-_DLLFUNC bool cti_settexttodisplay(std::string text, CVEC2 pos, CCOLOR col)
-{
-	bool result = false;
-
-	if (g_debuglog.isactive())
-	{
-		sprintf_s(g_logtext, 256, "%s() ->", __func__);
-		g_debuglog.writeentrytolog(g_logtext);
-	}
-
-	if (ml)
-	{
-		result = ml->settexttodisplay(text, pos.cx, pos.cy, col.r, col.g, col.b);
-	}
-
-	if (g_debuglog.isactive())
-	{
-		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
-		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
-		g_debuglog.writeentrytolog(g_logtext);
-	}
-	return result;
-}
-
-
-
-
 bool cti_cleardisplay()
 {
 	bool result = false;
@@ -606,6 +555,102 @@ bool cti_displayimages()
 	if (ml)
 	{
 		result = ml->displayimages();
+	}
+
+	if (g_debuglog.isactive())
+	{
+		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
+		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+	return result;
+}
+
+bool cti_addfont(std::string fontfile, int fontsize, CTI_FONT* fontref)
+{
+	bool result = false;
+
+	if (g_debuglog.isactive())
+	{
+		sprintf_s(g_logtext, 256, "%s() ->", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+
+	if (ml)
+	{
+		result = ml->addfont(fontfile, fontsize, fontref);
+	}
+
+	if (g_debuglog.isactive())
+	{
+		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
+		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+	return result;
+}
+
+bool cti_freeallfonts()
+{
+	bool result = false;
+
+	if (g_debuglog.isactive())
+	{
+		sprintf_s(g_logtext, 256, "%s() ->", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+
+	if (ml)
+	{
+		result = ml->freeallfonts();
+	}
+
+	if (g_debuglog.isactive())
+	{
+		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
+		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+	return result;
+}
+
+bool cti_freefont(CTI_FONT fontref)
+{
+	bool result = false;
+
+	if (g_debuglog.isactive())
+	{
+		sprintf_s(g_logtext, 256, "%s() ->", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+
+	if (ml)
+	{
+		result = ml->freefont(fontref);
+	}
+
+	if (g_debuglog.isactive())
+	{
+		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
+		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+	return result;
+}
+
+bool cti_texttoimage(CTI_IMAGE* imageref, CTI_FONT fontref, std::string text, CCOLOR col)
+{
+	bool result = false;
+
+	if (g_debuglog.isactive())
+	{
+		sprintf_s(g_logtext, 256, "%s() ->", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+
+	if (ml)
+	{
+		result = ml->texttoimage(imageref, fontref, text, col);
 	}
 
 	if (g_debuglog.isactive())
@@ -785,6 +830,30 @@ bool cti_resumemusic()
 	return result;
 }
 
+bool cti_setmusicvolume(int volume)
+{
+	bool result = false;
+
+	if (g_debuglog.isactive())
+	{
+		sprintf_s(g_logtext, 256, "%s() ->", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+
+	if (ml)
+	{
+		result = ml->setmusicvolume(volume);
+	}
+
+	if (g_debuglog.isactive())
+	{
+		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
+		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+	return result;
+}
+
 bool cti_addsound(std::string wavfile, CTI_SOUND* soundref)
 {
 	bool result = false;
@@ -881,5 +950,28 @@ bool cti_playsound(CTI_SOUND soundref)
 	return result;
 }
 
+bool cti_setsoundvolume(int volume, int channel)
+{
+	bool result = false;
+
+	if (g_debuglog.isactive())
+	{
+		sprintf_s(g_logtext, 256, "%s() ->", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+
+	if (ml)
+	{
+		result = ml->setsoundvolume(volume, channel);
+	}
+
+	if (g_debuglog.isactive())
+	{
+		if (result)	sprintf_s(g_logtext, 256, "%s() OK", __func__);
+		else		sprintf_s(g_logtext, 256, "%s() NG", __func__);
+		g_debuglog.writeentrytolog(g_logtext);
+	}
+	return result;
+}
 
 

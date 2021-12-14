@@ -4,6 +4,10 @@
 
 #include <string>
 
+#include <ctdatatype/ccolor.h>
+#include <ctdatatype/cvec2.h>
+
+
 #ifdef WIN32
 	#ifdef	__cplusplus
 		#define _DLLFUNC	extern "C" __declspec(dllexport)
@@ -135,7 +139,11 @@ enum class EVENTKEY
     K_MINUS = '-',
     K_PERIOD = '.',
     K_SLASH = '/',
-    K_0 = '0',
+	K_ARROWUP = (82 | (1 << 30)),
+	K_ARROWDOWN = (81 | (1 << 30)),
+	K_ARROWLEFT = (80 | (1 << 30)),
+	K_ARROWRIGHT = (79 | (1 << 30)),
+	K_0 = '0',
     K_1 = '1',
     K_2 = '2',
     K_3 = '3',
@@ -190,39 +198,16 @@ enum class EVENTKEY
 
 };
 
-class CCOLOR
+struct CRECT
 {
-public:
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-
-	CCOLOR() { r = 0; g = 0; b = 0; }
-	CCOLOR(uint8_t ar, uint8_t ag, uint8_t ab) { r = ar; g = ag; b = ab; }
-	CCOLOR(const CCOLOR& c) { r = c.r; g = c.g; b = c.b; }
-};
-
-class CVEC2
-{
-public:
-	int cx;
-	int cy;
-
-	CVEC2() { cx = 0; cy = 0; }
-	CVEC2(const CVEC2& b) { cx = b.cx; cy = b.cy; }
-	CVEC2(int x, int y) { cx = x, cy = y; }
-	~CVEC2() {}
-
-	CVEC2 operator+(const CVEC2& b) { return CVEC2(this->cx + b.cx, this->cy + b.cy); }
-	CVEC2 operator-(const CVEC2& b) { return CVEC2(this->cx - b.cx, this->cy - b.cy); }
-	CVEC2 operator*(const int b)	{ return CVEC2(this->cx * b, this->cy * b); }
-	CVEC2 operator/(const int b)	{ return CVEC2(this->cx / b, this->cy / b); }
-	CVEC2 operator=(const CVEC2& b) { return CVEC2(this->cx = b.cx, this->cy = b.cy); }
-	bool operator==(const CVEC2& b) { return (this->cx == b.cx) && (this->cy == b.cy); }
-	bool operator!=(const CVEC2& b) { return (this->cx != b.cx) || (this->cy != b.cy); }
+	int x;
+	int y;
+	int w;
+	int h;
 };
 
 typedef void* CTI_IMAGE;
+typedef void* CTI_FONT;
 typedef void* CTI_MUSIC;
 typedef void* CTI_SOUND;
 
@@ -245,15 +230,19 @@ _DLLFUNC bool cti_addimage(std::string bmpfile, CTI_IMAGE* imageref, bool transp
 _DLLFUNC bool cti_arraytoimage(uint32_t* pixels, CTI_IMAGE* imageref, int pitch);
 _DLLFUNC bool cti_freeallimages();
 _DLLFUNC bool cti_freeimage(CTI_IMAGE imageref);
-_DLLFUNC bool cti_setimagetodisplay(CTI_IMAGE imageref, CVEC2 pos);
+_DLLFUNC bool cti_setimagetodisplay(CTI_IMAGE imageref, CVEC2 pos, CRECT* srcrect = nullptr);
 _DLLFUNC bool cti_setimagetodisplay_adv(CTI_IMAGE imageref, CVEC2 pos, double angle);
 _DLLFUNC bool cti_getimagesize(CTI_IMAGE imageref, CVEC2* size);
 
-_DLLFUNC bool cti_setfont(std::string fontpath, int fontsize);
-_DLLFUNC bool cti_settexttodisplay(std::string text, CVEC2 pos, CCOLOR col);
-
 _DLLFUNC bool cti_cleardisplay();
 _DLLFUNC bool cti_displayimages();
+
+// TEXT
+
+_DLLFUNC bool cti_addfont(std::string fontfile, int fontsize, CTI_FONT* fontref);
+_DLLFUNC bool cti_freeallfonts();
+_DLLFUNC bool cti_freefont(CTI_FONT fontref);
+_DLLFUNC bool cti_texttoimage(CTI_IMAGE* imageref, CTI_FONT fontref, std::string text, CCOLOR col);
 
 // AUDIO
 
@@ -264,9 +253,11 @@ _DLLFUNC bool cti_playmusic(CTI_MUSIC musicref);
 _DLLFUNC bool cti_stopmusic();
 _DLLFUNC bool cti_pausemusic();
 _DLLFUNC bool cti_resumemusic();
+_DLLFUNC bool cti_setmusicvolume(int volume);
 
 _DLLFUNC bool cti_addsound(std::string wavfile, CTI_SOUND* soundref);
 _DLLFUNC bool cti_freeallsound();
 _DLLFUNC bool cti_freesound(CTI_SOUND soundref);
 _DLLFUNC bool cti_playsound(CTI_SOUND soundref);
+_DLLFUNC bool cti_setsoundvolume(int volume, int channel);
 

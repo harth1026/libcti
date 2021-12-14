@@ -1,9 +1,14 @@
-Hamamatsu Video Capture Library for LabVIEW
+Cross Turn Media Layer Interface
 Release Notes
 
 OVERVIEW:
 	LIBCTI is a library made to provide a simple interface to provide graphical display, audio output,
 	and keyboard/mouse.  
+
+DEPENDENCIES:
+	SDL2.0
+		SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)
+
 
 TODO:
 	- (med) alpha blending / fading in out

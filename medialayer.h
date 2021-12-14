@@ -10,11 +10,6 @@
 #include <SDL2/SDL_ttf.h>
 
 
-//#include <GL/glew.h>
-//#include <SDL2/SDL_opengl.h>
-//#include <GL/GLU.h>
-
-
 #include "libcti.h"
 
 #define			USE_AUDIO		1
@@ -33,18 +28,15 @@ private:
 	SDL_Surface*	m_display;
 	SDL_Renderer*	m_renderer;
 
-	TTF_Font*		m_font;
-
 	SDL_Keycode		m_key;
 
 	std::vector<SDL_Texture*>	m_imagelist;
 	std::vector<Mix_Music*>		m_musiclist;
 	std::vector<Mix_Chunk*>		m_soundlist;
-
+	std::vector<TTF_Font*>		m_fontlist;
 
 	SDL_Surface* loadSurface(std::string path);
 	SDL_Texture* loadTexture(std::string path, bool transparentbackground);
-	SDL_Texture* loadTextTexture(std::string text, SDL_Color textColor);
 
 	int m_screen_x;
 	int m_screen_y;
@@ -73,13 +65,17 @@ public:
 
 	bool freeallimages();
 	bool freeimage(CTI_IMAGE imageref);
-	bool setimagetodisplay(CTI_IMAGE imageref, int pos_x, int pos_y);
+	bool setimagetodisplay(CTI_IMAGE imageref, int pos_x, int pos_y, CRECT* srcrect=nullptr);
 	bool setimagetodisplay_adv(CTI_IMAGE imageref, int pos_x, int pos_y, double angle);
 	bool getimagesize(CTI_IMAGE imageref, int* size_x, int* size_y);
 
-		// text
-	bool setfont(std::string fontpath, int fontsize);
-	bool settexttodisplay(std::string text, int pos_x, int pos_y, int r, int g, int b);
+	bool setalphamodulation(CTI_IMAGE imageref, int value);
+
+	// text
+	bool addfont(std::string fontfile, int fontsize, CTI_FONT* fontref);
+	bool freeallfonts();
+	bool freefont(CTI_FONT fontref);
+	bool texttoimage(CTI_IMAGE* imageref, CTI_FONT fontref, std::string text, CCOLOR col);
 
 		// general
 	bool cleardisplay();
@@ -95,16 +91,15 @@ public:
 	bool stopmusic();
 	bool pausemusic();
 	bool resumemusic();
+	bool setmusicvolume(int volume);
 
 		// sound
 	bool addsound(std::string wavfile, CTI_SOUND* soundref);
 	bool freeallsound();
 	bool freesound(CTI_SOUND soundref);
 	bool playsound(CTI_SOUND soundref);
+	bool setsoundvolume(int volume, int channel);
 
 };
-
-
-
 
 #endif
